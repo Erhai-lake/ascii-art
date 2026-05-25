@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>ASCII Art</title>
+
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+
+		body {
+			width: 100vw;
+			height: 100vh;
+			overflow: hidden;
+			background-color: #000000;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+
+		#container {
+			position: relative;
+			width: 100vw;
+			height: 100vh;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			overflow: hidden;
+		}
+
+		#wrapper {
+			position: relative;
+			width: fit-content;
+			height: fit-content;
+			transform-origin: center center;
+			will-change: transform;
+		}
+
+		#background {
+			position: absolute;
+			inset: 0;
+			width: 100%;
+			height: 100%;
+			object-fit: fill;
+			z-index: 1;
+			opacity: 0.78;
+			filter: saturate(1.15) contrast(1.08) brightness(0.9) blur(0.15px);
+			image-rendering: pixelated;
+		}
+
+		#ascii {
+			position: relative;
+			z-index: 2;
+			font-family: monospace;
+			white-space: pre;
+			line-height: 1;
+			color: rgba(255, 255, 255, 0.30);
+			mix-blend-mode: screen;
+			text-shadow: 0 0 1px rgba(255, 255, 255, 0.08);
+			user-select: none;
+			image-rendering: pixelated;
+			image-rendering: crisp-edges;
+			-webkit-font-smoothing: none;
+			-moz-osx-font-smoothing: none;
+			text-rendering: geometricPrecision;
+		}
+
+		#toolbar {
+			position: fixed;
+			top: 16px;
+			left: 16px;
+			padding: 10px 14px;
+			z-index: 999;
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			border-radius: 12px;
+			background-color: rgba(0, 0, 0, 0.55);
+			backdrop-filter: blur(12px);
+			font-family: sans-serif;
+			color: #fff;
+			user-select: none;
+		}
+
+		#toolbar label {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			cursor: pointer;
+			font-size: 14px;
+		}
+
+		input[type="checkbox"] {
+			cursor: pointer;
+		}
+	</style>
+</head>
+
+<body>
+<div id="toolbar">
+	<label>
+		<input type="checkbox" id="toggleBackground" checked>
+		显示缩略图
+	</label>
+</div>
+<div id="container">
+	<div id="wrapper">
+		<img id="background" src="{{.Thumbnail}}" alt="">
+		<pre id="ascii">{{.Content}}</pre>
+	</div>
+</div>
+<script>
+	const CONTAINER = document.getElementById("container")
+	const WRAPPER = document.getElementById("wrapper")
+	const ASCII = document.getElementById("ascii")
+	const BACKGROUND = document.getElementById("background")
+	const TOGGLE_BACKGROUND = document.getElementById("toggleBackground")
+	const debounce = (func, wait) => {
+		let timeout
+		return (...args) => {
+			clearTimeout(timeout)
+			timeout = setTimeout(() => {
+				func(...args)
+			}, wait)
+		}
+	}
+	const resize = () => {
+		WRAPPER.style.transform = "scale(1)"
+		const WRAPPER_WIDTH = WRAPPER.offsetWidth
+		const WRAPPER_HEIGHT = WRAPPER.offsetHeight
+		const CONTAINER_WIDTH = CONTAINER.clientWidth
+		const CONTAINER_HEIGHT = CONTAINER.clientHeight
+		const SCALE_X = CONTAINER_WIDTH / WRAPPER_WIDTH
+		const SCALE_Y = CONTAINER_HEIGHT / WRAPPER_HEIGHT
+		const SCALE = Math.min(SCALE_X, SCALE_Y, 1)
+		WRAPPER.style.transform = `scale(${SCALE})`
+	}
+
+	TOGGLE_BACKGROUND.addEventListener("change", () => {
+		if (TOGGLE_BACKGROUND.checked) {
+			BACKGROUND.style.opacity = "0.78"
+			ASCII.style.color = "rgba(255,255,255,0.30)"
+			ASCII.style.textShadow = "0 0 1px rgba(255,255,255,0.08)"
+			ASCII.style.mixBlendMode = "screen"
+		} else {
+			BACKGROUND.style.opacity = "0"
+			ASCII.style.color = "#ffffff"
+			ASCII.style.textShadow = "none"
+			ASCII.style.mixBlendMode = "normal"
+		}
+	})
+	const debouncedResize = debounce(resize, 100)
+	window.addEventListener("resize", debouncedResize)
+	window.addEventListener("load", resize)
+</script>
+
+</body>
+
+</html>
